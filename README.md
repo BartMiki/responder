@@ -1,7 +1,7 @@
 # Responder - Warsztat
 
 
-Witam na warsztacie z Respondera! PoC aplikacji używającej LLM.
+Witam na warsztacie z **Respondera**! PoC aplikacji używającej LLM.
 
 Etapy znajdują się w kolejnych katalogach. Każdy etap zawiera plik README.pl.md z instrukcjami.
 

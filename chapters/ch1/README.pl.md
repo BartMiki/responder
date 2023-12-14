@@ -24,9 +24,9 @@ db = Chroma(embedding_function=OpenAIEmbeddings(), persist_directory="db")
 
 Dużo się tutaj dzieje. Rozpakujmy to krok po kroku:
 
-- używamy biblioteki `langchain`, zapewnia ona abstrakcję dla operacji na języku naturalnym. Dzięki temu w prosty sposób możemy połączyć różne bazy wektorowe, modele językowe i inne narzędzia do pracy z tekstem.
-- `Chroma` to baza wektorowa, która pozwala na indeksowanie wektorów i ich przeszukiwanie. W tym przypadku używamy bazy wektorowej, która jest zapisywana na dysku. Dzięki temu nie musimy za każdym razem odpytywać modelu językowego, co jest w dłuższej mierze kosztowne.
-- `OpenAIEmbeddings` to model językowy dostarczony przez OpenAI dostępny za pośrednictwem ich API. Służy
+- używamy biblioteki `langchain`, zapewnia ona abstrakcję dla operacji na języku naturalnym. Dzięki temu, w prosty sposób możemy połączyć różne bazy wektorowe, modele językowe i inne narzędzia do pracy z tekstem.
+- `Chroma` to baza wektorowa, która pozwala na indeksowanie wektorów i ich przeszukiwanie. W tym przypadku używamy bazy wektorowej, która jest zapisywana na dysku. Dzięki temu, nie musimy za każdym razem odpytywać modelu językowego, co jest w dłuższej mierze kosztowne.
+- `OpenAIEmbeddings` to model językowy dostarczony przez OpenAI, dostępny za pośrednictwem ich API. Służy
 on do generowania wektorów dla słów i zdań, które będą zapisywane w bazie wektorowej.
 - `PyPDFLoader` to klasa, która pozwala na wczytanie dokumentu PDF i podzielenie go na mniejsze fragmenty. W tym przypadku używamy jej do wczytania dokumentu PDF z artykułem.
 
@@ -71,9 +71,9 @@ Size: 1536, ten first values: [-0.0010614353676791236, -0.033304085560296674, -0
 Jak widzimy mamy dwa duże wektory, które reprezentują nasze zdania.
 
 Jak pewnie słyszeliście, wektory można porównywać ze sobą. Naszym celem jest
-odpowiedzenie na pytanie, a więc powinniśmy ocenić które dokumenty są podobne do pytania. Możemy to zrobić porównując wektory dokumentów z wektorem pytania i wybrać najbardziej podobne dokumenty jako potencjalni kandydaci do odpowiedzi.
+odpowiedzenie na pytanie, a więc powinniśmy ocenić które dokumenty są podobne do pytania. Możemy to zrobić porównując wektory dokumentów z wektorem pytania i wybrać najbardziej podobne dokumenty jako potencjalnych kandydatów do odpowiedzi.
 
-Spróbujmy odpowiedzieć na pytanie "Czym jest Filemon?". W tym celu zakodujemy pytanie jako wektor oraz porównamy pytanie z wektorami dokumentów. W tym celu użyjemy podobieństwa kosinusowego.
+Spróbujmy odpowiedzieć na pytanie "Czym jest Filemon?". W tym celu zakodujemy pytanie jako wektor oraz porównamy pytanie z wektorami dokumentów. Następnie użyjemy podobieństwa kosinusowego.
 
 ```python
 doc_to_embedding = dict(zip(documents, embeddings))
@@ -108,7 +108,7 @@ Jak widzimy program ocenił, że dokument: "Filemon to biały kot" jest bardziej
 
 ## Baza wektorowa na ratunek
 
-Wszystko co zrobiliśmy wyżej, jest dokładnie tym co robi baza wektorowa. Dlatego zamiast samemu implementować podobieństwo kosinusowe, embeddingi, itp możemy użyć bazy wektorowej, która zrobi to za nas.
+Wszystko co zrobiliśmy wyżej, jest dokładnie tym co robi baza wektorowa. Dlatego zamiast samemu implementować podobieństwo kosinusowe, embeddingi, itp. możemy użyć bazy wektorowej, która zrobi to za nas.
 
 ```python
 db = Chroma(embedding_function=OpenAIEmbeddings())
@@ -125,8 +125,8 @@ for idx in index:
 - `index = db.add_texts(documents)` - dodajemy dokumenty do bazy wektorowej. Zwracane są indeksy dokumentów.
 - `record = db.get(index, include=['documents', 'embeddings'])` - pobieramy dokumenty z bazy wektorowej za pomocą ich indeksu. W tym przypadku pobieramy dokumenty i ich wektory. Zwracane są słowniki, które zawierają informacje o dokumentach.
 
-Widzimy że inicjalizacja bazy wektorowej jest banalna a dodanie do niej tekstu jest jeszcze prostsze. Baza automatycznie liczy
-embeddingi i zapisuje je w pamięci. Możemy je później pobrać używając ich indeksu. Widzimy też, że embeddingi są takie same jak te, które wygenerowaliśmy wcześniej.
+Widzimy że inicjalizacja bazy wektorowej jest banalna, a dodanie do niej tekstu jest jeszcze prostsze. Baza automatycznie liczy
+embeddingi i zapisuje je w pamięci. Możemy je później pobrać, używając ich indeksu. Widzimy też, że embeddingi są takie same jak te, które wygenerowaliśmy wcześniej.
 
 ```
 Index: 07014a3a-99f8-11ee-8c32-00155de1115a, Document: 'Filemon to biały kot', Embedding[:5]: [-0.0006871067453175783, -0.007072553038597107, -0.020882124081254005, -0.013171396218240261, -0.03334297612309456]
@@ -144,7 +144,7 @@ for doc, similarity in doc_similarities:
 
 Funkcja ta przeszukuje bazę wektorową i zwraca dokumenty wraz z ich podobieństwem do pytania. 
 Można podać dodatkowy parametr `k`, który określa ile dokumentów ma być zwróconych. Domyślnie jest to 4.
-Ponieważ nasza baza i tak ma dwa dokumenty to nie ma to znaczenia.
+Ponieważ nasza baza i tak ma dwa dokumenty, to nie ma to znaczenia.
 
 Wynik to:
 
@@ -154,12 +154,12 @@ Filemon to biały kot: 0.7541967977924643
 Rex to czarny pies: 0.6488685359095563
 ```
 
-Jak widzimy wynik jest inny niż wcześniej! Ale czy faktycznie? Tak naprawdę, dokument który bardziej pasuje do pytania
-ma większy wynik podobieństwa. Także o ile same wyniki są inne, to ich kolejność jest taka sama.
+Jak widzimy wynik jest inny niż wcześniej! Ale czy faktycznie? Tak naprawdę, dokument który bardziej pasuje do pytania,
+ma większy wynik podobieństwa. Także, o ile same wyniki są inne, to ich kolejność jest taka sama.
 Dodatkowo funkcja zwraca nam posortowane wyniki, więc nie musimy tego robić sami.
 Różnice w podobieństwie wynikają ze sposobu implementacji podobieństwa w Chroma. Dlatego nie powinniśmy porównywać
 wartości podobieństwa z różnych baz wektorowych, ponieważ zależy to od implementacji, normalizacji wektorów oraz samych embeddingów.
-Jednakże, w obrębach jednej bazy wektorowej własności podobieństwa są zachowane.
+Jednakże, w obrębie jednej bazy wektorowej własności podobieństwa są zachowane.
 
 ## Wczytywanie dokumentów PDF
 
@@ -177,7 +177,7 @@ for i, chunk in enumerate(chunks):
 ```
 
 * `loader = PyPDFLoader(str(file_path)` - tworzymy obiekt, który będzie wczytywał dokument PDF.
-* `chunks = loader.load_and_split()` - wczytujemy dokument i dzielimy go na mniejsze fragmenty. Można tutaj użyć innych splitterów aby dostosować podział do naszych potrzeb. W tym przypadku użyjemy domyślnego podziału, czyli rekurencyjnego podziału na litery. Dzieli tekst za pomocą białych znaków na mniejsze fragmenty tak długo aż fragmenty będą pożądanej wielkości.
+* `chunks = loader.load_and_split()` - wczytujemy dokument i dzielimy go na mniejsze fragmenty. Można tutaj użyć innych splitterów, aby dostosować podział do naszych potrzeb. W tym przypadku użyjemy domyślnego podziału, czyli rekurencyjnego podziału na litery. Dzieli tekst za pomocą białych znaków na mniejsze fragmenty, tak długo aż fragmenty będą pożądanej wielkości.
 
 Po co w ogóle dzielimy tekst na fragmenty? 
 
@@ -189,7 +189,7 @@ Teraz możemy zindeksować dokumenty w bazie wektorowej:
 chunk_ids = db.add_documents(chunks)
 ```
 
-Proste! Zauważmy też że używamy funkcji `add_documents` zamiast `add_texts`. Funkcja `add_documents` przyjmuje listę dokumentów. Dokumenty zawierają nie tylko tekst, ale też inne informacje, takie jak np. numer "strony" i źródło dokumentu. Dzięki temu możemy później zwrócić nie tylko sam tekst ale też informacje skąd on pochodzi.
+Proste! Zauważmy też, że używamy funkcji `add_documents` zamiast `add_texts`. Funkcja `add_documents` przyjmuje listę dokumentów. Dokumenty zawierają nie tylko tekst, ale też inne informacje, takie jak np. numer "strony" i źródło dokumentu. Dzięki temu możemy później zwrócić nie tylko sam tekst, ale też informacje skąd on pochodzi.
 
 Wyświetlmy na koniec zawartość bazy wektorowej:
 
@@ -204,4 +204,4 @@ for i, idx in enumerate(records['ids']):
     print()
 ```
 
-To na tyle jeśli chodzi o etap pierwszy. W kolejnym etapie użyjemy modelu językowego do generowania odpowiedzi na pytania na podstawie znalezionych dokumentów.
+To na tyle, jeśli chodzi o etap pierwszy. W kolejnym etapie użyjemy modelu językowego do generowania odpowiedzi na pytania na podstawie znalezionych dokumentów.
