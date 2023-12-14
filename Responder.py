@@ -1,48 +1,51 @@
 import streamlit as st
 
+from util import get_chroma, get_language_templates, build_chain
+from dotenv import load_dotenv
+
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-from langchain.schema import StrOutputParser
-from langchain.schema.runnable import RunnablePassthrough
+from pathlib import Path
 
-from util import get_chroma
+load_dotenv()
 
-st.set_page_config(page_title="Responder")
-
+st.set_page_config(page_title="Responder", layout="wide")
 st.header("Responder - Ask about your documents")
-
 
 chroma = get_chroma()
 retriever = chroma.as_retriever()
 
-template = """Answer the question based only on the following context:
+# Your code here
+with st.sidebar:
+    templates = get_language_templates()
+    template_key = st.selectbox("Select prompt language", templates.keys())
+    template = templates[template_key]
 
-{context}
-
-Question: {question}
-"""
-
-
-def format_docs(docs):
-    return "\n\n".join([d.page_content for d in docs])
+    model_name = st.selectbox("Select model", ["gpt-3.5-turbo", "gpt-4"])
+    model = ChatOpenAI(temperature=0.0, model=model_name)
 
 
 if query := st.chat_input("What is your query?"):
     prompt = ChatPromptTemplate.from_template(template)
-    model = ChatOpenAI(temperature=0.0)
 
-    chain = (
-        {"context": retriever | format_docs} | {"question": RunnablePassthrough()}
-        | prompt
-        | model
-        | StrOutputParser()
-    )
+    chain = build_chain(retriever, prompt, model)
 
-    with st.chat_message("user"):
-        st.write(query)
+    col_1, col_2 = st.columns(2)
+    with col_1:
+        with st.chat_message("user"):
+            st.write(query)
 
-    with st.chat_message("ai"):
-        with st.spinner("Thinking..."):
-            output = chain.invoke(query)
-            
-        st.write(output)
+        with st.chat_message("ai"):
+            with st.spinner("Thinking..."):
+                output = chain.invoke(query)
+                
+            st.write(output["answer"])
+
+    with col_2:
+        st.subheader("Used documents")
+        for metadata in output["documents"]:
+            q = {"$and": [{'source': metadata['source']}, {'page': metadata['page']}]}
+            content = chroma.get(where=q)
+            label = f"Document: {Path(metadata['source']).name}, Page: {metadata['page']}"
+            with st.expander(label):
+                st.write(content['documents'][0])
